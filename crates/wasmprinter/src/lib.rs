@@ -848,12 +848,41 @@ impl Printer {
                 self.print_local_idx(self.state.func, *local_index)?;
             }
 
+            DropCT => self.result.push_str("drop.ct"),
+            SelectCT => self.result.push_str("select.ct"),
+            TypedSelectCT { ty } => {
+                self.result.push_str("select.ct (result ");
+                self.print_valtype(*ty)?;
+                self.result.push_str(")");
+            }
+            LocalGetCT { local_index } => {
+                self.result.push_str("local.get.ct ");
+                self.print_local_idx(self.state.func, *local_index)?;
+            }
+            LocalSetCT { local_index } => {
+                self.result.push_str("local.set.ct ");
+                self.print_local_idx(self.state.func, *local_index)?;
+            }
+            LocalTeeCT { local_index } => {
+                self.result.push_str("local.tee.ct ");
+                self.print_local_idx(self.state.func, *local_index)?;
+            }
+
             GlobalGet { global_index } => {
                 self.result.push_str("global.get ");
                 self.print_global_idx(*global_index)?;
             }
             GlobalSet { global_index } => {
                 self.result.push_str("global.set ");
+                self.print_global_idx(*global_index)?;
+            }
+
+            GlobalGetCT { global_index } => {
+                self.result.push_str("global.get.ct ");
+                self.print_global_idx(*global_index)?;
+            }
+            GlobalSetCT { global_index } => {
+                self.result.push_str("global.set.ct ");
                 self.print_global_idx(*global_index)?;
             }
 
@@ -882,6 +911,27 @@ impl Printer {
             I64Store16 { memarg } => self.mem_instr("i64.store16", memarg, 2)?,
             I64Store32 { memarg } => self.mem_instr("i64.store32", memarg, 4)?,
 
+            I32LoadCT { memarg } => self.mem_instr("i32.load.ct", memarg, 4)?,
+            I64LoadCT { memarg } => self.mem_instr("i64.load.ct", memarg, 8)?,
+            I32Load8SCT { memarg } => self.mem_instr("i32.load8_s.ct", memarg, 1)?,
+            I32Load8UCT { memarg } => self.mem_instr("i32.load8_u.ct", memarg, 1)?,
+            I32Load16SCT { memarg } => self.mem_instr("i32.load16_s.ct", memarg, 2)?,
+            I32Load16UCT { memarg } => self.mem_instr("i32.load16_u.ct", memarg, 2)?,
+            I64Load8SCT { memarg } => self.mem_instr("i64.load8_s.ct", memarg, 1)?,
+            I64Load8UCT { memarg } => self.mem_instr("i64.load8_u.ct", memarg, 1)?,
+            I64Load16SCT { memarg } => self.mem_instr("i64.load16_s.ct", memarg, 2)?,
+            I64Load16UCT { memarg } => self.mem_instr("i64.load16_u.ct", memarg, 2)?,
+            I64Load32SCT { memarg } => self.mem_instr("i64.load32_s.ct", memarg, 4)?,
+            I64Load32UCT { memarg } => self.mem_instr("i64.load32_u.ct", memarg, 4)?,
+
+            I32StoreCT { memarg } => self.mem_instr("i32.store.ct", memarg, 4)?,
+            I64StoreCT { memarg } => self.mem_instr("i64.store.ct", memarg, 8)?,
+            I32Store8CT { memarg } => self.mem_instr("i32.store8.ct", memarg, 1)?,
+            I32Store16CT { memarg } => self.mem_instr("i32.store16.ct", memarg, 2)?,
+            I64Store8CT { memarg } => self.mem_instr("i64.store8.ct", memarg, 1)?,
+            I64Store16CT { memarg } => self.mem_instr("i64.store16.ct", memarg, 2)?,
+            I64Store32CT { memarg } => self.mem_instr("i64.store32.ct", memarg, 4)?,
+
             MemorySize { mem: 0, .. } => self.result.push_str("memory.size"),
             MemorySize { mem, .. } => {
                 self.result.push_str("memory.size ");
@@ -895,6 +945,8 @@ impl Printer {
 
             I32Const { value } => write!(self.result, "i32.const {}", value)?,
             I64Const { value } => write!(self.result, "i64.const {}", value)?,
+            I32ConstCT { value } => write!(self.result, "i32.const.ct {}", value)?,
+            I64ConstCT { value } => write!(self.result, "i64.const.ct {}", value)?,
             F32Const { value } => {
                 self.result.push_str("f32.const ");
                 self.print_f32(value.bits())?;
@@ -937,6 +989,30 @@ impl Printer {
             I64LeU => self.result.push_str("i64.le_u"),
             I64GeS => self.result.push_str("i64.ge_s"),
             I64GeU => self.result.push_str("i64.ge_u"),
+
+            I32EqzCT => self.result.push_str("i32.eqz.ct"),
+            I32EqCT => self.result.push_str("i32.eq.ct"),
+            I32NeCT => self.result.push_str("i32.ne.ct"),
+            I32LtSCT => self.result.push_str("i32.lt_s.ct"),
+            I32LtUCT => self.result.push_str("i32.lt_u.ct"),
+            I32GtSCT => self.result.push_str("i32.gt_s.ct"),
+            I32GtUCT => self.result.push_str("i32.gt_u.ct"),
+            I32LeSCT => self.result.push_str("i32.le_s.ct"),
+            I32LeUCT => self.result.push_str("i32.le_u.ct"),
+            I32GeSCT => self.result.push_str("i32.ge_s.ct"),
+            I32GeUCT => self.result.push_str("i32.ge_u.ct"),
+
+            I64EqzCT => self.result.push_str("i64.eqz.ct"),
+            I64EqCT => self.result.push_str("i64.eq.ct"),
+            I64NeCT => self.result.push_str("i64.ne.ct"),
+            I64LtSCT => self.result.push_str("i64.lt_s.ct"),
+            I64LtUCT => self.result.push_str("i64.lt_u.ct"),
+            I64GtSCT => self.result.push_str("i64.gt_s.ct"),
+            I64GtUCT => self.result.push_str("i64.gt_u.ct"),
+            I64LeSCT => self.result.push_str("i64.le_s.ct"),
+            I64LeUCT => self.result.push_str("i64.le_u.ct"),
+            I64GeSCT => self.result.push_str("i64.ge_s.ct"),
+            I64GeUCT => self.result.push_str("i64.ge_u.ct"),
 
             F32Eq => self.result.push_str("f32.eq"),
             F32Ne => self.result.push_str("f32.ne"),
@@ -990,6 +1066,44 @@ impl Printer {
             I64Rotl => self.result.push_str("i64.rotl"),
             I64Rotr => self.result.push_str("i64.rotr"),
 
+            I32ClzCT => self.result.push_str("i32.clz.ct"),
+            I32CtzCT => self.result.push_str("i32.ctz.ct"),
+            I32PopcntCT => self.result.push_str("i32.popcnt.ct"),
+            I32AddCT => self.result.push_str("i32.add.ct"),
+            I32SubCT => self.result.push_str("i32.sub.ct"),
+            I32MulCT => self.result.push_str("i32.mul.ct"),
+            I32DivSCT => self.result.push_str("i32.div_s.ct"),
+            I32DivUCT => self.result.push_str("i32.div_u.ct"),
+            I32RemSCT => self.result.push_str("i32.rem_s.ct"),
+            I32RemUCT => self.result.push_str("i32.rem_u.ct"),
+            I32AndCT => self.result.push_str("i32.and.ct"),
+            I32OrCT => self.result.push_str("i32.or.ct"),
+            I32XorCT => self.result.push_str("i32.xor.ct"),
+            I32ShlCT => self.result.push_str("i32.shl.ct"),
+            I32ShrSCT => self.result.push_str("i32.shr_s.ct"),
+            I32ShrUCT => self.result.push_str("i32.shr_u.ct"),
+            I32RotlCT => self.result.push_str("i32.rotl.ct"),
+            I32RotrCT => self.result.push_str("i32.rotr.ct"),
+
+            I64ClzCT => self.result.push_str("i64.clz.ct"),
+            I64CtzCT => self.result.push_str("i64.ctz.ct"),
+            I64PopcntCT => self.result.push_str("i64.popcnt.ct"),
+            I64AddCT => self.result.push_str("i64.add.ct"),
+            I64SubCT => self.result.push_str("i64.sub.ct"),
+            I64MulCT => self.result.push_str("i64.mul.ct"),
+            I64DivSCT => self.result.push_str("i64.div_s.ct"),
+            I64DivUCT => self.result.push_str("i64.div_u.ct"),
+            I64RemSCT => self.result.push_str("i64.rem_s.ct"),
+            I64RemUCT => self.result.push_str("i64.rem_u.ct"),
+            I64AndCT => self.result.push_str("i64.and.ct"),
+            I64OrCT => self.result.push_str("i64.or.ct"),
+            I64XorCT => self.result.push_str("i64.xor.ct"),
+            I64ShlCT => self.result.push_str("i64.shl.ct"),
+            I64ShrSCT => self.result.push_str("i64.shr_s.ct"),
+            I64ShrUCT => self.result.push_str("i64.shr_u.ct"),
+            I64RotlCT => self.result.push_str("i64.rotl.ct"),
+            I64RotrCT => self.result.push_str("i64.rotr.ct"),
+
             F32Abs => self.result.push_str("f32.abs"),
             F32Neg => self.result.push_str("f32.neg"),
             F32Ceil => self.result.push_str("f32.ceil"),
@@ -1021,12 +1135,15 @@ impl Printer {
             F64Copysign => self.result.push_str("f64.copysign"),
 
             I32WrapI64 => self.result.push_str("i32.wrap_i64"),
+            I32WrapI64CT => self.result.push_str("i32.wrap_i64.ct"),
             I32TruncF32S => self.result.push_str("i32.trunc_f32_s"),
             I32TruncF32U => self.result.push_str("i32.trunc_f32_u"),
             I32TruncF64S => self.result.push_str("i32.trunc_f64_s"),
             I32TruncF64U => self.result.push_str("i32.trunc_f64_u"),
             I64ExtendI32S => self.result.push_str("i64.extend_i32_s"),
             I64ExtendI32U => self.result.push_str("i64.extend_i32_u"),
+            I64ExtendI32SCT => self.result.push_str("i64.extend_i32_s.ct"),
+            I64ExtendI32UCT => self.result.push_str("i64.extend_i32_u.ct"),
             I64TruncF32S => self.result.push_str("i64.trunc_f32_s"),
             I64TruncF32U => self.result.push_str("i64.trunc_f32_u"),
             I64TruncF64S => self.result.push_str("i64.trunc_f64_s"),
@@ -1053,6 +1170,12 @@ impl Printer {
             I64Extend8S => self.result.push_str("i64.extend8_s"),
             I64Extend16S => self.result.push_str("i64.extend16_s"),
             I64Extend32S => self.result.push_str("i64.extend32_s"),
+
+            I32Extend8SCT => self.result.push_str("i32.extend8_s.ct"),
+            I32Extend16SCT => self.result.push_str("i32.extend16_s.ct"),
+            I64Extend8SCT => self.result.push_str("i64.extend8_s.ct"),
+            I64Extend16SCT => self.result.push_str("i64.extend16_s.ct"),
+            I64Extend32SCT => self.result.push_str("i64.extend32_s.ct"),
 
             I32TruncSatF32S => self.result.push_str("i32.trunc_sat_f32_s"),
             I32TruncSatF32U => self.result.push_str("i32.trunc_sat_f32_u"),
