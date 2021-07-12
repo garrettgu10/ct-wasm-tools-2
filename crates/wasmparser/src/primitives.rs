@@ -402,8 +402,13 @@ pub enum Operator<'a> {
     },
     CatchAll,
     Drop,
+    DropCT,
     Select,
+    SelectCT,
     TypedSelect {
+        ty: Type,
+    },
+    TypedSelectCT {
         ty: Type,
     },
     LocalGet {
@@ -421,10 +426,31 @@ pub enum Operator<'a> {
     GlobalSet {
         global_index: u32,
     },
+    LocalGetCT {
+        local_index: u32,
+    },
+    LocalSetCT {
+        local_index: u32,
+    },
+    LocalTeeCT {
+        local_index: u32,
+    },
+    GlobalGetCT {
+        global_index: u32,
+    },
+    GlobalSetCT {
+        global_index: u32,
+    },
     I32Load {
         memarg: MemoryImmediate,
     },
     I64Load {
+        memarg: MemoryImmediate,
+    },
+    I32LoadCT {
+        memarg: MemoryImmediate,
+    },
+    I64LoadCT {
         memarg: MemoryImmediate,
     },
     F32Load {
@@ -463,10 +489,46 @@ pub enum Operator<'a> {
     I64Load32U {
         memarg: MemoryImmediate,
     },
+    I32Load8SCT {
+        memarg: MemoryImmediate,
+    },
+    I32Load8UCT {
+        memarg: MemoryImmediate,
+    },
+    I32Load16SCT {
+        memarg: MemoryImmediate,
+    },
+    I32Load16UCT {
+        memarg: MemoryImmediate,
+    },
+    I64Load8SCT {
+        memarg: MemoryImmediate,
+    },
+    I64Load8UCT {
+        memarg: MemoryImmediate,
+    },
+    I64Load16SCT {
+        memarg: MemoryImmediate,
+    },
+    I64Load16UCT {
+        memarg: MemoryImmediate,
+    },
+    I64Load32SCT {
+        memarg: MemoryImmediate,
+    },
+    I64Load32UCT {
+        memarg: MemoryImmediate,
+    },
     I32Store {
         memarg: MemoryImmediate,
     },
     I64Store {
+        memarg: MemoryImmediate,
+    },
+    I32StoreCT {
+        memarg: MemoryImmediate,
+    },
+    I64StoreCT {
         memarg: MemoryImmediate,
     },
     F32Store {
@@ -490,6 +552,21 @@ pub enum Operator<'a> {
     I64Store32 {
         memarg: MemoryImmediate,
     },
+    I32Store8CT {
+        memarg: MemoryImmediate,
+    },
+    I32Store16CT {
+        memarg: MemoryImmediate,
+    },
+    I64Store8CT {
+        memarg: MemoryImmediate,
+    },
+    I64Store16CT {
+        memarg: MemoryImmediate,
+    },
+    I64Store32CT {
+        memarg: MemoryImmediate,
+    },
     MemorySize {
         mem: u32,
         mem_byte: u8,
@@ -502,6 +579,12 @@ pub enum Operator<'a> {
         value: i32,
     },
     I64Const {
+        value: i64,
+    },
+    I32ConstCT {
+        value: i32,
+    },
+    I64ConstCT {
         value: i64,
     },
     F32Const {
@@ -539,6 +622,28 @@ pub enum Operator<'a> {
     I64LeU,
     I64GeS,
     I64GeU,
+    I32EqzCT,
+    I32EqCT,
+    I32NeCT,
+    I32LtSCT,
+    I32LtUCT,
+    I32GtSCT,
+    I32GtUCT,
+    I32LeSCT,
+    I32LeUCT,
+    I32GeSCT,
+    I32GeUCT,
+    I64EqzCT,
+    I64EqCT,
+    I64NeCT,
+    I64LtSCT,
+    I64LtUCT,
+    I64GtSCT,
+    I64GtUCT,
+    I64LeSCT,
+    I64LeUCT,
+    I64GeSCT,
+    I64GeUCT,
     F32Eq,
     F32Ne,
     F32Lt,
@@ -587,6 +692,42 @@ pub enum Operator<'a> {
     I64ShrU,
     I64Rotl,
     I64Rotr,
+    I32ClzCT,
+    I32CtzCT,
+    I32PopcntCT,
+    I32AddCT,
+    I32SubCT,
+    I32MulCT,
+    I32DivSCT,
+    I32DivUCT,
+    I32RemSCT,
+    I32RemUCT,
+    I32AndCT,
+    I32OrCT,
+    I32XorCT,
+    I32ShlCT,
+    I32ShrSCT,
+    I32ShrUCT,
+    I32RotlCT,
+    I32RotrCT,
+    I64ClzCT,
+    I64CtzCT,
+    I64PopcntCT,
+    I64AddCT,
+    I64SubCT,
+    I64MulCT,
+    I64DivSCT,
+    I64DivUCT,
+    I64RemSCT,
+    I64RemUCT,
+    I64AndCT,
+    I64OrCT,
+    I64XorCT,
+    I64ShlCT,
+    I64ShrSCT,
+    I64ShrUCT,
+    I64RotlCT,
+    I64RotrCT,
     F32Abs,
     F32Neg,
     F32Ceil,
@@ -616,12 +757,15 @@ pub enum Operator<'a> {
     F64Max,
     F64Copysign,
     I32WrapI64,
+    I32WrapI64CT,
     I32TruncF32S,
     I32TruncF32U,
     I32TruncF64S,
     I32TruncF64U,
     I64ExtendI32S,
     I64ExtendI32U,
+    I64ExtendI32SCT,
+    I64ExtendI32UCT,
     I64TruncF32S,
     I64TruncF32U,
     I64TruncF64S,
@@ -645,6 +789,11 @@ pub enum Operator<'a> {
     I64Extend8S,
     I64Extend16S,
     I64Extend32S,
+    I32Extend8SCT,
+    I32Extend16SCT,
+    I64Extend8SCT,
+    I64Extend16SCT,
+    I64Extend32SCT,
 
     // 0xFC operators
     // Non-trapping Float-to-int Conversions

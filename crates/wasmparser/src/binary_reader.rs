@@ -1401,6 +1401,7 @@ impl<'a> BinaryReader<'a> {
                 function_index: self.read_var_u32()?,
             },
 
+            0xfb => self.read_0xfb_operator()?,
             0xfc => self.read_0xfc_operator()?,
             0xfd => self.read_0xfd_operator()?,
             0xfe => self.read_0xfe_operator()?,
@@ -1408,6 +1409,177 @@ impl<'a> BinaryReader<'a> {
             _ => {
                 return Err(BinaryReaderError::new(
                     format!("Unknown opcode: 0x{:x}", code),
+                    self.original_position() - 1,
+                ));
+            }
+        })
+    }
+
+    fn read_0xfb_operator(&mut self) -> Result<Operator<'a>> {
+        let code = self.read_var_u32()?;
+        Ok(match code {
+            0x1a => Operator::DropCT,
+            0x1b => Operator::SelectCT,
+            0x1c => {
+                let results = self.read_var_u32()?;
+                if results != 1 {
+                    return Err(BinaryReaderError::new(
+                        "invalid result arity",
+                        self.position,
+                    ));
+                }
+                Operator::TypedSelectCT {
+                    ty: self.read_type()?,
+                }
+            }
+            0x20 => Operator::LocalGetCT {
+                local_index: self.read_var_u32()?,
+            },
+            0x21 => Operator::LocalSetCT {
+                local_index: self.read_var_u32()?,
+            },
+            0x22 => Operator::LocalTeeCT {
+                local_index: self.read_var_u32()?,
+            },
+            0x23 => Operator::GlobalGetCT {
+                global_index: self.read_var_u32()?,
+            },
+            0x24 => Operator::GlobalSetCT {
+                global_index: self.read_var_u32()?,
+            },
+            0x28 => Operator::I32LoadCT {
+                memarg: self.read_memarg()?,
+            },
+            0x29 => Operator::I64LoadCT {
+                memarg: self.read_memarg()?,
+            },
+            0x2c => Operator::I32Load8SCT {
+                memarg: self.read_memarg()?,
+            },
+            0x2d => Operator::I32Load8UCT {
+                memarg: self.read_memarg()?,
+            },
+            0x2e => Operator::I32Load16SCT {
+                memarg: self.read_memarg()?,
+            },
+            0x2f => Operator::I32Load16UCT {
+                memarg: self.read_memarg()?,
+            },
+            0x30 => Operator::I64Load8SCT {
+                memarg: self.read_memarg()?,
+            },
+            0x31 => Operator::I64Load8UCT {
+                memarg: self.read_memarg()?,
+            },
+            0x32 => Operator::I64Load16SCT {
+                memarg: self.read_memarg()?,
+            },
+            0x33 => Operator::I64Load16UCT {
+                memarg: self.read_memarg()?,
+            },
+            0x34 => Operator::I64Load32SCT {
+                memarg: self.read_memarg()?,
+            },
+            0x35 => Operator::I64Load32UCT {
+                memarg: self.read_memarg()?,
+            },
+            0x36 => Operator::I32StoreCT {
+                memarg: self.read_memarg()?,
+            },
+            0x37 => Operator::I64StoreCT {
+                memarg: self.read_memarg()?,
+            },
+            0x3a => Operator::I32Store8CT {
+                memarg: self.read_memarg()?,
+            },
+            0x3b => Operator::I32Store16CT {
+                memarg: self.read_memarg()?,
+            },
+            0x3c => Operator::I64Store8CT {
+                memarg: self.read_memarg()?,
+            },
+            0x3d => Operator::I64Store16CT {
+                memarg: self.read_memarg()?,
+            },
+            0x3e => Operator::I64Store32CT {
+                memarg: self.read_memarg()?,
+            },
+            0x41 => Operator::I32ConstCT {
+                value: self.read_var_i32()?,
+            },
+            0x42 => Operator::I64ConstCT {
+                value: self.read_var_i64()?,
+            },
+            0x45 => Operator::I32EqzCT,
+            0x46 => Operator::I32EqCT,
+            0x47 => Operator::I32NeCT,
+            0x48 => Operator::I32LtSCT,
+            0x49 => Operator::I32LtUCT,
+            0x4a => Operator::I32GtSCT,
+            0x4b => Operator::I32GtUCT,
+            0x4c => Operator::I32LeSCT,
+            0x4d => Operator::I32LeUCT,
+            0x4e => Operator::I32GeSCT,
+            0x4f => Operator::I32GeUCT,
+            0x50 => Operator::I64EqzCT,
+            0x51 => Operator::I64EqCT,
+            0x52 => Operator::I64NeCT,
+            0x53 => Operator::I64LtSCT,
+            0x54 => Operator::I64LtUCT,
+            0x55 => Operator::I64GtSCT,
+            0x56 => Operator::I64GtUCT,
+            0x57 => Operator::I64LeSCT,
+            0x58 => Operator::I64LeUCT,
+            0x59 => Operator::I64GeSCT,
+            0x5a => Operator::I64GeUCT,
+            0x67 => Operator::I32ClzCT,
+            0x68 => Operator::I32CtzCT,
+            0x69 => Operator::I32PopcntCT,
+            0x6a => Operator::I32AddCT,
+            0x6b => Operator::I32SubCT,
+            0x6c => Operator::I32MulCT,
+            0x6d => Operator::I32DivSCT,
+            0x6e => Operator::I32DivUCT,
+            0x6f => Operator::I32RemSCT,
+            0x70 => Operator::I32RemUCT,
+            0x71 => Operator::I32AndCT,
+            0x72 => Operator::I32OrCT,
+            0x73 => Operator::I32XorCT,
+            0x74 => Operator::I32ShlCT,
+            0x75 => Operator::I32ShrSCT,
+            0x76 => Operator::I32ShrUCT,
+            0x77 => Operator::I32RotlCT,
+            0x78 => Operator::I32RotrCT,
+            0x79 => Operator::I64ClzCT,
+            0x7a => Operator::I64CtzCT,
+            0x7b => Operator::I64PopcntCT,
+            0x7c => Operator::I64AddCT,
+            0x7d => Operator::I64SubCT,
+            0x7e => Operator::I64MulCT,
+            0x7f => Operator::I64DivSCT,
+            0x80 => Operator::I64DivUCT,
+            0x81 => Operator::I64RemSCT,
+            0x82 => Operator::I64RemUCT,
+            0x83 => Operator::I64AndCT,
+            0x84 => Operator::I64OrCT,
+            0x85 => Operator::I64XorCT,
+            0x86 => Operator::I64ShlCT,
+            0x87 => Operator::I64ShrSCT,
+            0x88 => Operator::I64ShrUCT,
+            0x89 => Operator::I64RotlCT,
+            0x8a => Operator::I64RotrCT,
+            0xa7 => Operator::I32WrapI64CT,
+            0xac => Operator::I64ExtendI32SCT,
+            0xad => Operator::I64ExtendI32UCT,
+
+            0xc0 => Operator::I32Extend8SCT,
+            0xc1 => Operator::I32Extend16SCT,
+            0xc2 => Operator::I64Extend8SCT,
+            0xc3 => Operator::I64Extend16SCT,
+            0xc4 => Operator::I64Extend32SCT,
+            _ => {
+                return Err(BinaryReaderError::new(
+                    format!("Unknown 0xfb subopcode: 0x{:x}", code),
                     self.original_position() - 1,
                 ));
             }
