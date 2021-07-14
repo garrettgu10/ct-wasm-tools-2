@@ -673,11 +673,13 @@ impl<'a, 'b> ExprResolver<'a, 'b> {
                 self.resolver.resolve_item_ref(&mut i.dst)?;
             }
 
-            GlobalSet(i) | GlobalGet(i) => {
+            GlobalSet(i) | GlobalGet(i)
+            | GlobalSetCT(i) | GlobalGetCT(i) => {
                 self.resolver.resolve_item_ref(&mut i.0)?;
             }
 
-            LocalSet(i) | LocalGet(i) | LocalTee(i) => {
+            LocalSet(i) | LocalGet(i) | LocalTee(i)
+            | LocalSetCT(i) | LocalGetCT(i) | LocalTeeCT(i) => {
                 assert!(self.scopes.len() > 0);
                 // Resolve a local by iterating over scopes from most recent
                 // to less recent. This allows locals added by `let` blocks to
@@ -803,7 +805,8 @@ impl<'a, 'b> ExprResolver<'a, 'b> {
                 self.resolve_label(l)?;
             }
 
-            Select(s) => {
+            Select(s)
+            | SelectCT(s) => {
                 if let Some(list) = &mut s.tys {
                     for ty in list {
                         self.resolver.resolve_valtype(ty)?;

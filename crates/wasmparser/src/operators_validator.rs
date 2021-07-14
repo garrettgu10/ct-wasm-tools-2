@@ -1062,10 +1062,6 @@ impl OperatorValidator {
             | Operator::I32AddCT
             | Operator::I32SubCT
             | Operator::I32MulCT
-            | Operator::I32DivSCT
-            | Operator::I32DivUCT
-            | Operator::I32RemSCT
-            | Operator::I32RemUCT
             | Operator::I32AndCT
             | Operator::I32OrCT
             | Operator::I32XorCT
@@ -1105,10 +1101,6 @@ impl OperatorValidator {
             | Operator::I64AddCT
             | Operator::I64SubCT
             | Operator::I64MulCT
-            | Operator::I64DivSCT
-            | Operator::I64DivUCT
-            | Operator::I64RemSCT
-            | Operator::I64RemUCT
             | Operator::I64AndCT
             | Operator::I64OrCT
             | Operator::I64XorCT
