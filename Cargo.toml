@@ -24,6 +24,8 @@ wast = { path = "crates/wast" }
 wat = { path = "crates/wat" }
 serde_json = "1"
 serde = { version = "1", features = ['derive'] }
+wast-strip = { path = "crates/wast-strip" }
+wat-strip = { path = "crates/wat-strip" }
 
 [dev-dependencies]
 anyhow = "1.0"
